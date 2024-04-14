@@ -54,7 +54,7 @@ fn main() {
     io::stdin().read_line(&mut name).expect("read line error");
     let crate_name = name.trim();
 
-    let dir = "/home/nerd/rusty/";
+    let dir = "/home/nerd/dev/rusty/";
 
     let output = Command::new("cargo")
         .args(["new", "--bin", crate_name])
