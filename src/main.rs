@@ -3,6 +3,10 @@ use std::{
     process::Command,
 };
 const FILE: &str = r#"
+/*
+ * CREATED WITH CREATECROSSRAT 2023-2024
+ */
+
 use std::io::stdout;
 
 use crossterm::{
