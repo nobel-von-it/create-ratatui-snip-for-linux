@@ -48,17 +48,54 @@ fn run<B: Backend>(t: &mut Terminal<B>) -> anyhow::Result<()> {
 fn ui(f: &mut Frame) {}
 "#;
 
+const HELP: &str = r#"
+<-- HELP FOR USAGE -->
+-d || --dir (it's for base directory where create project)
+default = /home/username/Dev/Rusty, where username is from USERNAME env variable
+"#;
+
+struct Config {
+    dir: String,
+}
+impl Config {
+    fn new() -> Self {
+        let args: Vec<String> = std::env::args().skip(1).collect();
+        let mut dir = format!("/home/{}/Dev/Rusty/", std::env::var("USERNAME").unwrap());
+        match args.len() {
+            0 => {}
+            1 => match args[0].as_str() {
+                "-h"|"--help" => {
+                    println!("{}", HELP);
+                    std::process::exit(0);
+                },
+                _ => {}
+            }
+            2 => match args[0].as_str() {
+                "-d"|"--dir" => {
+                    dir = args[1].clone();
+                }
+                _ => {}
+            }
+            _ => {
+                println!("{}", HELP);
+                std::process::exit(0);
+            },
+        }
+        Self {dir}
+    }
+}
+
 fn main() {
+    let config = Config::new();
+
     println!("Enter project name:");
     let mut name = String::new();
     io::stdin().read_line(&mut name).expect("read line error");
     let crate_name = name.trim();
 
-    let dir = "/home/nerd/dev/rusty/";
-
     let output = Command::new("cargo")
         .args(["new", "--bin", crate_name])
-        .current_dir(dir)
+        .current_dir(&config.dir)
         .output()
         .expect("crate create error");
 
@@ -66,7 +103,7 @@ fn main() {
         println!("crate created");
     }
 
-    let crate_dir = format!("{dir}{crate_name}/");
+    let crate_dir = format!("{}{}/", &config.dir, crate_name);
     let addlib = Command::new("cargo")
         .args(["add", "crossterm", "ratatui", "anyhow"])
         .current_dir(crate_dir.clone())
@@ -93,7 +130,6 @@ fn main() {
 fn write_file(crate_path: &str) {
     let full_path_to_file = format!("{crate_path}src/main.rs");
 
-    println!("{}", &full_path_to_file);
     let mut path = std::fs::File::options()
         .write(true)
         .open(full_path_to_file)
